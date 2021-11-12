@@ -6,8 +6,6 @@
 
 Safe, global singletons initialized at program start.
 
-This crate is `no_std`.
-
 # Usage
 
 Simply add `magic_static` as a dependency to get started:

@@ -131,10 +131,10 @@ impl<T> MagicStatic<T> {
 	#[doc(hidden)]
 	#[inline]
 	pub fn __init(&'static self) {
+		unsafe { (&mut *self.value.get()).as_mut_ptr().write((self.init)()) };
 		assert!(
 			!self.initialized.swap(true, core::sync::atomic::Ordering::SeqCst),
 			"This magic static has already been initialized! It looks like you have multiple calls to `magic_static::init()`"
 		);
-		unsafe { (&mut *self.value.get()).as_mut_ptr().write((self.init)()) };
 	}
 }

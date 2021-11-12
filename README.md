@@ -1,6 +1,12 @@
-# ✨ `magic_static` (`no_std`)
+[![crates.io](https://img.shields.io/crates/v/magic_static.svg)](https://crates.io/crates/magic_static)
+[![docs.rs](https://docs.rs/magic_static/badge.svg)](https://docs.rs/magic_static/)
+[![license](https://img.shields.io/crates/l/magic_static)](https://github.com/WilliamVenner/magic_static/blob/master/LICENSE)
+
+# ✨ `magic_static`
 
 Safe, global singletons initialized at program start.
+
+This crate is `no_std`.
 
 # Usage
 
@@ -39,9 +45,9 @@ fn main() {
 }
 ```
 
-### Comparison to [`lazy_static`](https://crates.io/crates/lazy_static)
+## Comparison to [`lazy_static`](https://crates.io/crates/lazy_static)
 
-`lazy_static`s are initialized on first-use and are heavily targetted towards multithreaded applications.
+`lazy_static`s are initialized on first-use and are targetted towards multithreaded applications.
 
 Every time a `lazy_static` is dereferenced, it must check whether it has been initialized yet. This is usually extremely cheap, and the resulting reference can be stored for use in hot loops (for example), but in some cases you may prefer no checks at all, i.e. a more lightweight solution.
 

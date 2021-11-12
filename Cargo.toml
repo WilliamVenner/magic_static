@@ -4,3 +4,8 @@ members = [
 	"magic_static_macro",
 	"test"
 ]
+
+default-members = [
+	"magic_static",
+	"magic_static_macro",
+]

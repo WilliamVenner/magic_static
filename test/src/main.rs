@@ -39,6 +39,18 @@ mod other_module {
 	pub fn magic_static() {}
 }
 
+mod auto_module {
+	magic_statics! {
+		pub static ref WOW: usize = {
+			println!("Wow 3!");
+			420
+		};
+
+		pub static ref OOH: usize = 0;
+		pub static ref OK: usize = 1;
+	}
+}
+
 magic_static! {
 	pub static ref TOP_LEVEL: usize = {
 		println!("TOP_LEVEL!");
@@ -58,7 +70,9 @@ fn main() {
 	magic_static::init! {
 		mod crate::other_module,
 		crate::other_module::OOH,
-		self::other_module::OK
+		self::other_module::OK,
+
+		mod auto_module
 	}
 
 	{

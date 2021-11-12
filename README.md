@@ -56,7 +56,7 @@ mod baz {
         MAGIC,
         BAR
     )]
-    // Must be called `magic_static`
+    // The `magic_statics!` macro (NOT `magic_static!`) can generate this function for you
     pub fn magic_static() {}
 }
 

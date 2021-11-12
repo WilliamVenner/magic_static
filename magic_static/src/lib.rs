@@ -53,6 +53,7 @@ pub use private::*;
 /// 		BAR
 /// 	)]
 /// 	// Must be called `magic_static`
+/// 	// The `magic_statics!` macro (NOT `magic_static!`) can generate this function for you
 /// 	pub fn magic_static() {}
 /// }
 ///
@@ -82,6 +83,52 @@ macro_rules! magic_static {
 				init: || $expr
 			};
 		)*
+	};
+}
+
+#[macro_export]
+/// The same as `magic_static!` but automatically generates the module-level `magic_static` function for you:
+///
+/// ```rust
+/// mod foo {
+/// 	// Note the use of `magic_statics!` rather than `magic_static!` here
+/// 	magic_statics! {
+/// 		pub(super) static ref MAGIC: usize = {
+/// 			println!("Magic!");
+/// 			42
+/// 		};
+///
+/// 		pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
+/// 	}
+///
+/// 	// If we used the `magic_static!` macro instead, we'd have to write this ourselves:
+/// 	/*
+/// 	#[magic_static::main(
+/// 		MAGIC,
+/// 		BAR
+/// 	)]
+/// 	pub fn magic_static() {}
+/// 	*/
+/// }
+///
+/// #[magic_static::main(
+/// 	mod foo // This will initialize all magic statics in `foo`
+/// )]
+/// fn main() {
+/// 	println!("Hello, world!");
+/// }
+/// ```
+macro_rules! magic_statics {
+	{ $($vis:vis static ref $ident:ident: $ty:ty = $expr:expr;)* } => {
+		$crate::magic_static!($($vis static ref $ident: $ty = $expr;)*);
+
+		#[doc(hidden)]
+		#[inline]
+		pub fn magic_static() {
+			$crate::init! {
+				$($ident),*
+			}
+		}
 	};
 }
 

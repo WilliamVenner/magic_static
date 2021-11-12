@@ -35,11 +35,19 @@ use quote::ToTokens;
 /// ```
 pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
 	let mut func = syn::parse_macro_input!(item as syn::ItemFn);
-	let paths: Vec<syn::Path> = syn::parse_macro_input!(attr as syn::AttributeArgs).into_iter().map(|meta| match meta {
-		syn::NestedMeta::Meta(syn::Meta::Path(path)) => path,
-		_ => panic!("Expected path")
-	}).collect();
 
-	func.block.stmts.insert(0, syn::parse(quote::quote! { { #(#paths.__init();)* } }.into()).expect("Internal error"));
+	let paths: Vec<syn::Path> = syn::parse_macro_input!(attr as syn::AttributeArgs)
+		.into_iter()
+		.map(|meta| match meta {
+			syn::NestedMeta::Meta(syn::Meta::Path(path)) => path,
+			_ => panic!("Expected path"),
+		})
+		.collect();
+
+	func.block.stmts.insert(
+		0,
+		syn::parse(quote::quote! { { #(#paths.__init();)* } }.into()).expect("Internal error"),
+	);
+
 	func.into_token_stream().into()
 }

@@ -14,7 +14,7 @@ pub struct MagicStatic<T> {
 	pub value: UnsafeCell<MaybeUninit<T>>,
 
 	#[doc(hidden)]
-	pub init: fn() -> T
+	pub init: fn() -> T,
 }
 impl<T> core::ops::Deref for MagicStatic<T> {
 	type Target = T;
@@ -22,7 +22,10 @@ impl<T> core::ops::Deref for MagicStatic<T> {
 	#[cfg_attr(debug_assertions, inline)]
 	#[cfg_attr(not(debug_assertions), inline(always))]
 	fn deref(&self) -> &Self::Target {
-		debug_assert!(self.initialized.load(core::sync::atomic::Ordering::Acquire), "This magic static has not been initialized yet! You need to add `#[magic_static::main]` to your main function, or call `magic_static::init()` at an appropriate time.");
+		debug_assert!(
+			self.initialized.load(core::sync::atomic::Ordering::Acquire),
+			"This magic static has not been initialized yet! You need to add `#[magic_static::main]` to your main function, or call `magic_static::init()` at an appropriate time."
+		);
 		unsafe { (&*self.value.get()).assume_init_ref() }
 	}
 }
@@ -119,7 +122,10 @@ impl<T> MagicStatic<T> {
 	#[doc(hidden)]
 	#[inline]
 	pub fn __init(&'static self) {
-		assert!(!self.initialized.swap(true, core::sync::atomic::Ordering::SeqCst), "This magic static has already been initialized! It looks like you have multiple calls to `magic_static::init()`");
+		assert!(
+			!self.initialized.swap(true, core::sync::atomic::Ordering::SeqCst),
+			"This magic static has already been initialized! It looks like you have multiple calls to `magic_static::init()`"
+		);
 		unsafe { (&mut *self.value.get()).as_mut_ptr().write((self.init)()) };
 	}
 }

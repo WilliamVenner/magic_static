@@ -14,4 +14,4 @@ documentation = "https://docs.rs/magic_static"
 bare-metal = []
 
 [dependencies]
-magic_static_macro = { path = "../magic_static_macro", version = "1.0.0" }
+magic_static_macro = { path = "../magic_static_macro", version = "1.0.1" }

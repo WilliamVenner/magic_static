@@ -1,6 +1,6 @@
 [package]
 name = "magic_static_macro"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "Proc macro for magic_static"
 license = "MIT"
@@ -12,6 +12,5 @@ proc-macro = true
 doctest = false
 
 [dependencies]
-proc-macro2 = "1"
 syn = { version = "1", features = ["full"] }
 quote = "1"

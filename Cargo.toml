@@ -1,0 +1,6 @@
+[workspace]
+members = [
+	"magic_static",
+	"magic_static_macro",
+	"test"
+]

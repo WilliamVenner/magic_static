@@ -1,0 +1,7 @@
+[package]
+name = "magic_static"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+magic_static_macro = { path = "../magic_static_macro", version = "1.0.0" }

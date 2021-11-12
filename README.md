@@ -15,6 +15,15 @@ Simply add `magic_static` as a dependency in your `Cargo.toml` to get started:
 magic_static = "*"
 ```
 
+### `bare-metal`
+
+If your target doesn't support atomics or threads, enable the `bare-metal` feature flag in your `Cargo.toml`:
+
+```toml
+[dependencies]
+magic_static = { version = "*", features = ["bare-metal"] }
+```
+
 ## Example
 
 ```rust
@@ -39,15 +48,6 @@ mod foo {
 fn main() {
     println!("Hello, world!");
 }
-```
-
-## `bare-metal`
-
-If your target doesn't support atomics or threads, enable the `bare-metal` feature flag in your `Cargo.toml`:
-
-```toml
-[dependencies]
-magic_static = { version = "*", features = ["bare-metal"] }
 ```
 
 ## Comparison to [`lazy_static`](https://crates.io/crates/lazy_static)

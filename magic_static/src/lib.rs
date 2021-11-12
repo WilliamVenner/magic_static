@@ -26,7 +26,6 @@ pub use private::*;
 ///
 /// ```rust
 /// # #[macro_use] extern crate r#magic_static;
-///
 /// mod foo {
 /// 	magic_static! {
 /// 		pub(super) static ref MAGIC: usize = {
@@ -85,7 +84,6 @@ macro_rules! magic_static {
 ///
 /// ```rust
 /// # #[macro_use] extern crate r#magic_static;
-///
 /// mod foo {
 /// 	magic_static! {
 /// 		pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());

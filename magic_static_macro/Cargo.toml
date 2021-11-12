@@ -2,6 +2,10 @@
 name = "magic_static_macro"
 version = "1.0.0"
 edition = "2021"
+description = "Proc macro for magic_static"
+license = "MIT"
+authors = ["William Venner <william@venner.io>"]
+repository = "https://github.com/WilliamVenner/magic_static"
 
 [lib]
 proc-macro = true

@@ -2,6 +2,13 @@
 name = "magic_static"
 version = "1.0.0"
 edition = "2021"
+description = "Safe, global singletons initialized at program start"
+license = "MIT"
+authors = ["William Venner <william@venner.io>"]
+repository = "https://github.com/WilliamVenner/magic_static"
+keywords = ["lazy-static", "static", "singleton", "global", "globals"]
+categories = ["no-std", "rust-patterns", "memory-management"]
+documentation = "https://docs.rs/magic_static"
 
 [features]
 bare-metal = []

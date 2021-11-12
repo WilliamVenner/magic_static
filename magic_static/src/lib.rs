@@ -51,6 +51,7 @@ impl<T: core::fmt::Debug> core::fmt::Debug for MagicStatic<T> {
 ///
 /// The following behaviour is considered undefined:
 ///
+/// * Initializing magic statics from multiple threads concurrently.
 /// * Spawning new threads and accessing magic statics during initialization from them.
 /// * Interior mutability of magic statics where the mutability is not synchronized across multiple threads (e.g. with a Mutex or RwLock.) This is not a problem for single-threaded applications.
 ///
@@ -88,6 +89,14 @@ macro_rules! magic_static {
 /// # Panics
 ///
 /// This will panic if any of the magic statics have already been initialized.
+///
+/// # Safety
+///
+/// The following behaviour is considered undefined:
+///
+/// * Initializing magic statics from multiple threads concurrently.
+/// * Spawning new threads and accessing magic statics during initialization from them.
+/// * Interior mutability of magic statics where the mutability is not synchronized across multiple threads (e.g. with a Mutex or RwLock.) This is not a problem for single-threaded applications.
 ///
 /// # Example
 ///

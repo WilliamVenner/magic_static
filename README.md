@@ -6,7 +6,7 @@
 
 Safe, global singletons initialized at program start.
 
-# Usage
+## Usage
 
 Simply add `magic_static` as a dependency in your `Cargo.toml` to get started:
 
@@ -15,7 +15,7 @@ Simply add `magic_static` as a dependency in your `Cargo.toml` to get started:
 magic_static = "*"
 ```
 
-# Example
+## Example
 
 ```rust
 #[macro_use]
@@ -41,7 +41,7 @@ fn main() {
 }
 ```
 
-# `bare-metal`
+## `bare-metal`
 
 If your target doesn't support atomics or threads, enable the `bare-metal` feature flag in your `Cargo.toml`:
 

@@ -8,9 +8,7 @@ Safe, global singletons initialized at program start.
 
 # Usage
 
-Simply add `magic_static` as a dependency to get started:
-
-[`Cargo.toml`]()
+Simply add `magic_static` as a dependency in your `Cargo.toml` to get started:
 
 ```toml
 [dependencies]
@@ -41,6 +39,15 @@ mod foo {
 fn main() {
     println!("Hello, world!");
 }
+```
+
+# `bare-metal`
+
+If your target doesn't support atomics or threads, enable the `bare-metal` feature flag in your `Cargo.toml`:
+
+```toml
+[dependencies]
+magic_static = { version = "*", features = ["bare-metal"] }
 ```
 
 ## Comparison to [`lazy_static`](https://crates.io/crates/lazy_static)

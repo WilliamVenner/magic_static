@@ -26,7 +26,7 @@ impl<T> core::ops::Deref for MagicStatic<T> {
 			self.initialized.load(core::sync::atomic::Ordering::Acquire),
 			"This magic static has not been initialized yet! You need to add `#[magic_static::main]` to your main function, or call `magic_static::init()` at an appropriate time."
 		);
-		unsafe { (&*self.value.get()).assume_init_ref() }
+		unsafe { &*(&*self.value.get()).as_ptr() }
 	}
 }
 

@@ -16,8 +16,6 @@ mod foo {
 	foo::BAR
 )]
 fn main() {
-	println!("{:?}", foo::MAGIC);
-
 	assert_eq!(*foo::BAR, 42);
 	assert!(std::panic::catch_unwind(|| magic_static::init! { foo::BAR }).is_err());
 
@@ -42,6 +40,7 @@ fn main() {
 		assert_eq!(n, 2);
 	}
 
+	println!("{magic:?} {magic} {magic:x}", magic = foo::BAR);
 	println!("{:?}", foo::MAGIC);
 
 	println!("Test Success");

@@ -19,9 +19,6 @@ use quote::ToTokens;
 /// # Example
 ///
 /// ```rust
-/// # #[macro_use]
-/// # extern crate magic_static;
-///
 /// mod foo {
 /// 	magic_static! {
 /// 		pub(super) static ref MAGIC: usize = {

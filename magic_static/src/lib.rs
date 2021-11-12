@@ -3,58 +3,11 @@
 
 pub use magic_static_macro::main;
 
-use core::{cell::UnsafeCell, mem::MaybeUninit};
+#[doc(hidden)]
+pub mod private;
 
 #[doc(hidden)]
-pub struct MagicStatic<T> {
-	#[doc(hidden)]
-	#[cfg(not(feature = "bare-metal"))]
-	pub initialized: core::sync::atomic::AtomicBool,
-
-	#[doc(hidden)]
-	#[cfg(feature = "bare-metal")]
-	pub initialized: UnsafeCell<bool>,
-
-	#[doc(hidden)]
-	pub value: UnsafeCell<MaybeUninit<T>>,
-
-	#[doc(hidden)]
-	pub init: fn() -> T,
-}
-impl<T> MagicStatic<T> {
-	#[inline]
-	#[cfg(not(feature = "bare-metal"))]
-	fn initialized(&self) -> bool {
-		self.initialized.load(core::sync::atomic::Ordering::Acquire)
-	}
-
-	#[inline]
-	#[cfg(feature = "bare-metal")]
-	fn initialized(&self) -> bool {
-		unsafe { *self.initialized.get() }
-	}
-}
-impl<T> core::ops::Deref for MagicStatic<T> {
-	type Target = T;
-
-	#[cfg_attr(debug_assertions, inline)]
-	#[cfg_attr(not(debug_assertions), inline(always))]
-	fn deref(&self) -> &Self::Target {
-		debug_assert!(
-			self.initialized(),
-			"This magic static has not been initialized yet! You need to add `#[magic_static::main]` to your main function, or call `magic_static::init()` at an appropriate time."
-		);
-		unsafe { &*(&*self.value.get()).as_ptr() }
-	}
-}
-
-unsafe impl<T> Sync for MagicStatic<T> {}
-
-impl<T: core::fmt::Debug> core::fmt::Debug for MagicStatic<T> {
-	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-		(**self).fmt(f)
-	}
-}
+pub use private::*;
 
 #[macro_export]
 /// Defines new magic statics.
@@ -71,12 +24,28 @@ impl<T: core::fmt::Debug> core::fmt::Debug for MagicStatic<T> {
 ///
 /// # Example
 ///
-/// magic_static! {
-/// 	pub static ref MAGIC: usize = {
-/// 		println!("Magic!");
-/// 		42
-/// 	};
+/// ```rust
+/// # #[macro_use] extern crate r#magic_static;
+///
+/// mod foo {
+/// 	magic_static! {
+/// 		pub(super) static ref MAGIC: usize = {
+/// 			println!("Magic!");
+/// 			42
+/// 		};
+///
+/// 		pub(super) static ref BAR: std::sync::Mutex::<()> = std::sync::Mutex::new(());
+/// 	}
 /// }
+///
+/// #[magic_static::main(
+/// 	foo::MAGIC,
+///     foo::BAR
+/// )]
+/// fn main() {
+/// 	println!("Hello, world!");
+/// }
+/// ```
 macro_rules! magic_static {
 	{ $($vis:vis static $ident:ident: $ty:ty = $expr:expr;)* } => {
 		compile_error!("Expected `static ref`, got `static`")
@@ -98,24 +67,6 @@ macro_rules! magic_static {
 }
 
 #[macro_export]
-#[doc(hidden)]
-#[cfg(not(feature = "bare-metal"))]
-macro_rules! __magic_static_initialized {
-	() => {
-		::core::sync::atomic::AtomicBool::new(false)
-	};
-}
-
-#[macro_export]
-#[doc(hidden)]
-#[cfg(feature = "bare-metal")]
-macro_rules! __magic_static_initialized {
-	() => {
-		::core::cell::UnsafeCell::new(false)
-	};
-}
-
-#[macro_export]
 /// Manually initializes the provided magic statics **in the specified order**.
 ///
 /// # Panics
@@ -133,8 +84,7 @@ macro_rules! __magic_static_initialized {
 /// # Example
 ///
 /// ```rust
-/// # #[macro_use]
-/// # extern crate magic_static;
+/// # #[macro_use] extern crate r#magic_static;
 ///
 /// mod foo {
 /// 	magic_static! {
@@ -157,30 +107,4 @@ macro_rules! init {
 	{ $($path:path),* } => {
 		$($path.__init();)*
 	};
-}
-
-impl<T> MagicStatic<T> {
-	#[doc(hidden)]
-	#[inline]
-	pub fn __init(&'static self) {
-		#[cfg(not(feature = "bare-metal"))]
-		if let Err(true) = self.initialized.fetch_update(core::sync::atomic::Ordering::SeqCst, core::sync::atomic::Ordering::SeqCst, |initialized| {
-			if initialized {
-				None
-			} else {
-				unsafe { (&mut *self.value.get()).as_mut_ptr().write((self.init)()) };
-				Some(true)
-			}
-		}) {
-			panic!("This magic static has already been initialized! It looks like you have multiple calls to `magic_static::init()`");
-		}
-
-		#[cfg(feature = "bare-metal")] {
-			unsafe {
-				assert!(!*self.initialized.get(), "This magic static has already been initialized! It looks like you have multiple calls to `magic_static::init()`");
-				*self.initialized.get() = true;
-				(&mut *self.value.get()).as_mut_ptr().write((self.init)())
-			};
-		}
-	}
 }

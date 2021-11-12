@@ -30,9 +30,29 @@ use quote::ToTokens;
 /// 	}
 /// }
 ///
+/// // You can also modularize your magic statics like so:
+/// mod baz {
+/// 	magic_static! {
+/// 		pub(super) static ref MAGIC: usize = {
+/// 			println!("Magic!");
+/// 			42
+/// 		};
+///
+/// 		pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
+/// 	}
+///
+/// 	#[magic_static::main(
+/// 		MAGIC,
+/// 		BAR
+/// 	)]
+/// 	// Must be called `magic_static`
+/// 	pub fn magic_static() {}
+/// }
+///
 /// #[magic_static::main(
 /// 	foo::MAGIC,
-///     foo::BAR
+/// 	foo::BAR,
+/// 	mod baz // This will initialize all magic statics in `baz`
 /// )]
 /// fn main() {
 /// 	println!("Hello, world!");
@@ -40,18 +60,41 @@ use quote::ToTokens;
 /// ```
 pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
 	let mut func = syn::parse_macro_input!(item as syn::ItemFn);
+	let attr = attr.to_string();
 
-	let paths: Vec<syn::Path> = syn::parse_macro_input!(attr as syn::AttributeArgs)
-		.into_iter()
-		.map(|meta| match meta {
-			syn::NestedMeta::Meta(syn::Meta::Path(path)) => path,
-			_ => panic!("Expected path"),
-		})
-		.collect();
+	enum MagicStatic {
+		Module(syn::Path),
+		Item(syn::Path),
+	}
+	impl quote::ToTokens for MagicStatic {
+		fn to_tokens(&self, tokens: &mut quote::__private::TokenStream) {
+			match self {
+				MagicStatic::Module(path) => tokens.extend(quote::quote! { #path::magic_static() }),
+				MagicStatic::Item(path) => tokens.extend(quote::quote! { #path.__init() }),
+			}
+		}
+	}
+
+	let mut magic_statics = vec![];
+	for item in attr.split(",").map(|path| path.trim()) {
+		if let Some(item) = item.strip_prefix("mod ").map(str::trim) {
+			if item.contains("::") {
+				magic_statics.push(MagicStatic::Module(syn::parse_str(item).expect("Expected path to a module containing an accessible `magic_static` function")));
+			} else {
+				magic_statics.push(MagicStatic::Module(syn::parse_str(&format!("self::{}", item)).expect("Expected path to a module containing an accessible `magic_static` function")));
+			}
+		} else {
+			magic_statics.push(MagicStatic::Item(syn::parse_str(item).expect("Expected path to magic static")));
+		}
+	}
 
 	func.block.stmts.insert(
 		0,
-		syn::parse(quote::quote! { { #(#paths.__init();)* } }.into()).expect("Internal error"),
+		syn::parse(quote::quote! {
+			{
+				#(#magic_statics;)*
+			}
+		}.into()).expect("Internal error"),
 	);
 
 	func.into_token_stream().into()

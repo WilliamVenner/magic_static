@@ -1,6 +1,6 @@
 [package]
 name = "magic_static"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2021"
 description = "Safe, global singletons initialized at program start"
 license = "MIT"
@@ -14,4 +14,4 @@ documentation = "https://docs.rs/magic_static"
 bare-metal = []
 
 [dependencies]
-magic_static_macro = { path = "../magic_static_macro", version = "1.0.1" }
+magic_static_macro = { path = "../magic_static_macro", version = "1.1.0" }

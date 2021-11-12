@@ -4,14 +4,14 @@ version = 3
 
 [[package]]
 name = "magic_static"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "magic_static_macro",
 ]
 
 [[package]]
 name = "magic_static_macro"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "quote",
  "syn",

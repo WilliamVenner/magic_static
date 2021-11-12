@@ -37,9 +37,29 @@ pub use private::*;
 /// 	}
 /// }
 ///
+/// // You can also modularize your magic statics like so:
+/// mod baz {
+/// 	magic_static! {
+/// 		pub(super) static ref MAGIC: usize = {
+/// 			println!("Magic!");
+/// 			42
+/// 		};
+///
+/// 		pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
+/// 	}
+///
+/// 	#[magic_static::main(
+/// 		MAGIC,
+/// 		BAR
+/// 	)]
+/// 	// Must be called `magic_static`
+/// 	pub fn magic_static() {}
+/// }
+///
 /// #[magic_static::main(
 /// 	foo::MAGIC,
-///     foo::BAR
+/// 	foo::BAR,
+/// 	mod baz // This will initialize all magic statics in `baz`
 /// )]
 /// fn main() {
 /// 	println!("Hello, world!");
@@ -94,15 +114,51 @@ macro_rules! magic_static {
 /// 	}
 /// }
 ///
+/// // You can also modularize your magic statics like so:
+/// mod baz {
+/// 	magic_static! {
+/// 		pub(super) static ref MAGIC: usize = {
+/// 			println!("Magic!");
+/// 			42
+/// 		};
+///
+/// 		pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
+/// 	}
+///
+/// 	#[magic_static::main(
+/// 		MAGIC,
+/// 		BAR
+/// 	)]
+/// 	// Must be called `magic_static`
+/// 	pub fn magic_static() {}
+/// }
+///
 /// fn main() {
 /// 	magic_static::init! {
 /// 		foo::BAR,
-/// 		foo::MAGIC
+/// 		foo::MAGIC,
+/// 		mod baz // This will initialize all magic statics in `baz`
 /// 	}
 /// }
 /// ```
 macro_rules! init {
-	{ $($path:path),* } => {
-		$($path.__init();)*
+	() => {};
+
+	(mod $($path:ident)::+) => {
+		$($path)::+::magic_static()
+	};
+
+	(mod $($path:ident)::+, $($tail:tt)*) => {
+		$($path)::+::magic_static();
+		$crate::init!($($tail)*);
+	};
+
+	($path:path) => {
+		$path.__init()
+	};
+
+	($path:path, $($tail:tt)*) => {
+		$path.__init();
+		$crate::init!($($tail)*);
 	};
 }

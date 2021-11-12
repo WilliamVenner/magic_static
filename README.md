@@ -41,9 +41,29 @@ mod foo {
     }
 }
 
+// You can also modularize your magic statics like so:
+mod baz {
+    magic_static! {
+        pub(super) static ref MAGIC: usize = {
+            println!("Magic!");
+            42
+        };
+
+        pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    }
+
+    #[magic_static::main(
+        MAGIC,
+        BAR
+    )]
+    // Must be called `magic_static`
+    pub fn magic_static() {}
+}
+
 #[magic_static::main(
     foo::MAGIC,
-    foo::BAR
+    foo::BAR,
+    mod baz // This will initialize all magic statics in `baz`
 )]
 fn main() {
     println!("Hello, world!");

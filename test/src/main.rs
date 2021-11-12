@@ -12,12 +12,54 @@ mod foo {
 	}
 }
 
+mod some_module {
+	magic_static! {
+		pub static ref WOW: usize = {
+			println!("Wow!");
+			420
+		};
+	}
+
+	#[magic_static::main(WOW)]
+	pub fn magic_static() {}
+}
+
+mod other_module {
+	magic_static! {
+		pub static ref WOW: usize = {
+			println!("Wow 2!");
+			420
+		};
+
+		pub static ref OOH: usize = 0;
+		pub static ref OK: usize = 1;
+	}
+
+	#[magic_static::main(WOW)]
+	pub fn magic_static() {}
+}
+
+magic_static! {
+	pub static ref TOP_LEVEL: usize = {
+		println!("TOP_LEVEL!");
+		1337
+	};
+}
+
 #[magic_static::main(
-	foo::BAR
+	TOP_LEVEL,
+	foo::BAR,
+	mod some_module
 )]
 fn main() {
 	assert_eq!(*foo::BAR, 42);
 	assert!(std::panic::catch_unwind(|| magic_static::init! { foo::BAR }).is_err());
+
+	magic_static::init! {
+		mod crate::other_module,
+		crate::other_module::OOH,
+		self::other_module::OK
+	}
 
 	{
 		let barrier = std::sync::Arc::new(std::sync::Barrier::new(3));

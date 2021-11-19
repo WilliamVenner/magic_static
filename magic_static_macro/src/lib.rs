@@ -99,3 +99,22 @@ pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 	func.into_token_stream().into()
 }
+
+#[proc_macro_attribute]
+pub fn magic_static(_attr: TokenStream, item: TokenStream) -> TokenStream {
+	let mut func = syn::parse_macro_input!(item as syn::ItemStatic);
+
+	let ty = func.ty;
+	let expr = func.expr;
+
+	func.ty = Box::new(syn::parse_quote! { ::magic_static::MagicStatic<#ty> });
+	func.expr = Box::new(syn::parse_quote! {
+		::magic_static::MagicStatic {
+			initialized: ::magic_static::__magic_static_initialized!(),
+			value: ::core::cell::UnsafeCell::new(::core::mem::MaybeUninit::uninit()),
+			init: || #expr
+		}
+	});
+
+	func.into_token_stream().into()
+}

@@ -1,8 +1,14 @@
 #[macro_use]
 extern crate magic_static;
 
+#[magic_static]
+static NAKED_FOO: u32 = { println!("Hello world from naked static!"); 11 };
+
+#[magic_static]
+static NAKED_FOO_2: u32 = { println!("Hello world from naked static 2!"); 12 };
+
 mod foo {
-	magic_static! {
+	magic_statics! {
 		pub static ref BAR: usize = {
 			println!("Hello, world!");
 			42
@@ -13,7 +19,7 @@ mod foo {
 }
 
 mod some_module {
-	magic_static! {
+	magic_statics! {
 		pub static ref WOW: usize = {
 			println!("Wow!");
 			420
@@ -25,7 +31,7 @@ mod some_module {
 }
 
 mod other_module {
-	magic_static! {
+	magic_statics! {
 		pub static ref WOW: usize = {
 			println!("Wow 2!");
 			420
@@ -40,7 +46,7 @@ mod other_module {
 }
 
 mod auto_module {
-	magic_statics! {
+	magic_statics_mod! {
 		pub static ref WOW: usize = {
 			println!("Wow 3!");
 			420
@@ -51,7 +57,7 @@ mod auto_module {
 	}
 }
 
-magic_static! {
+magic_statics! {
 	pub static ref TOP_LEVEL: usize = {
 		println!("TOP_LEVEL!");
 		1337
@@ -59,21 +65,27 @@ magic_static! {
 }
 
 #[magic_static::main(
+	NAKED_FOO_2,
 	TOP_LEVEL,
 	foo::BAR,
 	mod some_module
 )]
 fn main() {
+	assert_eq!(*NAKED_FOO_2, 12);
 	assert_eq!(*foo::BAR, 42);
 	assert!(std::panic::catch_unwind(|| magic_static::init! { foo::BAR }).is_err());
 
 	magic_static::init! {
+		NAKED_FOO,
+
 		mod crate::other_module,
 		crate::other_module::OOH,
 		self::other_module::OK,
 
 		mod auto_module
 	}
+
+	assert_eq!(*NAKED_FOO, 11);
 
 	{
 		let barrier = std::sync::Arc::new(std::sync::Barrier::new(3));

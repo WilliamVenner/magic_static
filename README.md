@@ -31,7 +31,7 @@ magic_static = { version = "*", features = ["bare-metal"] }
 extern crate magic_static;
 
 mod foo {
-    magic_static! {
+    magic_statics! {
         pub(super) static ref MAGIC: usize = {
             println!("Magic!");
             42
@@ -41,9 +41,10 @@ mod foo {
     }
 }
 
-// You can also modularize your magic statics like so:
+// You can also modularize your magic statics in a group at the module level like so:
+// See `main()` for how to initialize these magic statics.
 mod baz {
-    magic_static! {
+    magic_statics_mod! {
         pub(super) static ref MAGIC: usize = {
             println!("Magic!");
             42
@@ -51,19 +52,23 @@ mod baz {
 
         pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
     }
-
-    #[magic_static::main(
-        MAGIC,
-        BAR
-    )]
-    // The `magic_statics!` macro (NOT `magic_static!`) can generate this function for you
-    pub fn magic_static() {}
 }
+
+// You can also decorate statics to make them magic statics
+#[magic_static]
+static FOO_BAR: std::thread::JoinHandle<()> = {
+	std::thread::spawn(move || {
+		loop { println!("HELP I CANT STOP SPINNING"); }
+	})
+};
 
 #[magic_static::main(
+	FOO_BAR,
+
     foo::MAGIC,
     foo::BAR,
-    mod baz // This will initialize all magic statics in `baz`
+
+    mod baz // This will initialize all magic statics in the `baz` module
 )]
 fn main() {
     println!("Hello, world!");

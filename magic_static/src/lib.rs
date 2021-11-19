@@ -1,7 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![no_std]
 
-pub use magic_static_macro::main;
+pub use magic_static_macro::{main, magic_static};
 
 #[doc(hidden)]
 pub mod private;
@@ -25,48 +25,51 @@ pub use private::*;
 /// # Example
 ///
 /// ```rust
-/// # #[macro_use] extern crate r#magic_static;
 /// mod foo {
-/// 	magic_static! {
-/// 		pub(super) static ref MAGIC: usize = {
-/// 			println!("Magic!");
-/// 			42
-/// 		};
+///     magic_statics! {
+///         pub(super) static ref MAGIC: usize = {
+///             println!("Magic!");
+///             42
+///         };
 ///
-/// 		pub(super) static ref BAR: std::sync::Mutex::<()> = std::sync::Mutex::new(());
-/// 	}
+///         pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
+///     }
 /// }
 ///
-/// // You can also modularize your magic statics like so:
+/// // You can also modularize your magic statics in a group at the module level like so:
+/// // See `main()` for how to initialize these magic statics.
 /// mod baz {
-/// 	magic_static! {
-/// 		pub(super) static ref MAGIC: usize = {
-/// 			println!("Magic!");
-/// 			42
-/// 		};
+///     magic_statics_mod! {
+///         pub(super) static ref MAGIC: usize = {
+///             println!("Magic!");
+///             42
+///         };
 ///
-/// 		pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
-/// 	}
-///
-/// 	#[magic_static::main(
-/// 		MAGIC,
-/// 		BAR
-/// 	)]
-/// 	// Must be called `magic_static`
-/// 	// The `magic_statics!` macro (NOT `magic_static!`) can generate this function for you
-/// 	pub fn magic_static() {}
+///         pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
+///     }
 /// }
+///
+/// // You can also decorate statics to make them magic statics
+/// #[magic_static]
+/// static FOO_BAR: std::thread::JoinHandle<()> = {
+/// 	std::thread::spawn(move || {
+/// 		loop { println!("HELP I CANT STOP SPINNING"); }
+/// 	})
+/// };
 ///
 /// #[magic_static::main(
-/// 	foo::MAGIC,
-/// 	foo::BAR,
-/// 	mod baz // This will initialize all magic statics in `baz`
+/// 	FOO_BAR,
+///
+///     foo::MAGIC,
+///     foo::BAR,
+///
+///     mod baz // This will initialize all magic statics in the `baz` module
 /// )]
 /// fn main() {
 /// 	println!("Hello, world!");
 /// }
 /// ```
-macro_rules! magic_static {
+macro_rules! magic_statics {
 	{ $($vis:vis static $ident:ident: $ty:ty = $expr:expr;)* } => {
 		compile_error!("Expected `static ref`, got `static`")
 	};
@@ -89,10 +92,14 @@ macro_rules! magic_static {
 #[macro_export]
 /// The same as `magic_static!` but automatically generates the module-level `magic_static` function for you:
 ///
+/// **You can only have one of these per module (scope)** - if you want to initialize magic statics in a group, define a `magic_static` function in your module yourself! (See the example)
+///
+/// # Example
+///
 /// ```rust
 /// mod foo {
-/// 	// Note the use of `magic_statics!` rather than `magic_static!` here
-/// 	magic_statics! {
+/// 	// Note the use of `magic_statics_mod!` rather than `magic_static!` here
+/// 	magic_statics_mod! {
 /// 		pub(super) static ref MAGIC: usize = {
 /// 			println!("Magic!");
 /// 			42
@@ -101,7 +108,7 @@ macro_rules! magic_static {
 /// 		pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
 /// 	}
 ///
-/// 	// If we used the `magic_static!` macro instead, we'd have to write this ourselves:
+/// 	// Will generate the following:
 /// 	/*
 /// 	#[magic_static::main(
 /// 		MAGIC,
@@ -118,9 +125,9 @@ macro_rules! magic_static {
 /// 	println!("Hello, world!");
 /// }
 /// ```
-macro_rules! magic_statics {
+macro_rules! magic_statics_mod {
 	{ $($vis:vis static ref $ident:ident: $ty:ty = $expr:expr;)* } => {
-		$crate::magic_static!($($vis static ref $ident: $ty = $expr;)*);
+		$crate::magic_statics!($($vis static ref $ident: $ty = $expr;)*);
 
 		#[doc(hidden)]
 		#[inline]

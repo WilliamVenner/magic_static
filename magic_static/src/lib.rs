@@ -202,17 +202,17 @@ macro_rules! init {
 		$($path)::+::magic_static()
 	};
 
-	(mod $($path:ident)::+, $($tail:tt)*) => {
+	(mod $($path:ident)::+, $($tail:tt)*) => {{
 		$($path)::+::magic_static();
 		$crate::init!($($tail)*);
-	};
+	}};
 
 	($path:path) => {
 		$path.__init()
 	};
 
-	($path:path, $($tail:tt)*) => {
+	($path:path, $($tail:tt)*) => {{
 		$path.__init();
 		$crate::init!($($tail)*);
-	};
+	}};
 }

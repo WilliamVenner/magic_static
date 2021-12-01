@@ -4,9 +4,7 @@ use quote::ToTokens;
 #[proc_macro_attribute]
 /// An attribute that can be attached to your main function which initializes magic statics **in the specified order**.
 ///
-/// # Panics
-///
-/// This will panic if any of the magic statics have already been initialized.
+/// Does nothing to a magic static if it has already been initialized.
 ///
 /// # Safety
 ///

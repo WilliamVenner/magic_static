@@ -73,7 +73,7 @@ magic_statics! {
 fn main() {
 	assert_eq!(*NAKED_FOO_2, 12);
 	assert_eq!(*foo::BAR, 42);
-	assert!(std::panic::catch_unwind(|| magic_static::init! { foo::BAR }).is_err());
+	assert!(std::panic::catch_unwind(|| magic_static::init! { foo::BAR }).is_ok());
 
 	magic_static::init! {
 		NAKED_FOO,
@@ -104,8 +104,8 @@ fn main() {
 			barrier_c.wait();
 			magic_static::init! { foo::MAGIC }
 		});
-		let n = if a.join().is_err() { 1 } else { 0 } + if b.join().is_err() { 1 } else { 0 } + if c.join().is_err() { 1 } else { 0 };
-		assert_eq!(n, 2);
+		let n = if a.join().is_ok() { 1 } else { 0 } + if b.join().is_ok() { 1 } else { 0 } + if c.join().is_ok() { 1 } else { 0 };
+		assert_eq!(n, 3);
 	}
 
 	println!("{magic:?} {magic} {magic:x}", magic = foo::BAR);

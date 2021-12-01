@@ -50,24 +50,17 @@ impl<T> MagicStatic<T> {
 	#[doc(hidden)]
 	#[inline]
 	pub fn __init(&'static self) {
-		#[cfg(not(feature = "bare-metal"))]
-		if let Err(true) = self.initialized.fetch_update(core::sync::atomic::Ordering::SeqCst, core::sync::atomic::Ordering::SeqCst, |initialized| {
-			if initialized {
-				None
-			} else {
-				unsafe { (&mut *self.value.get()).as_mut_ptr().write((self.init)()) };
-				Some(true)
+		unsafe {
+			#[cfg(not(feature = "bare-metal"))]
+			if let Ok(_) = self.initialized.compare_exchange(false, true, core::sync::atomic::Ordering::SeqCst, core::sync::atomic::Ordering::SeqCst) {
+				(&mut *self.value.get()).as_mut_ptr().write((self.init)());
 			}
-		}) {
-			panic!("This magic static has already been initialized! It looks like you have multiple calls to `magic_static::init()`");
-		}
 
-		#[cfg(feature = "bare-metal")] {
-			unsafe {
-				assert!(!*self.initialized.get(), "This magic static has already been initialized! It looks like you have multiple calls to `magic_static::init()`");
+			#[cfg(feature = "bare-metal")]
+			if !*self.initialized.get() {
 				*self.initialized.get() = true;
-				(&mut *self.value.get()).as_mut_ptr().write((self.init)())
-			};
+				(&mut *self.value.get()).as_mut_ptr().write((self.init)());
+			}
 		}
 	}
 }

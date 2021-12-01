@@ -142,9 +142,7 @@ macro_rules! magic_statics_mod {
 #[macro_export]
 /// Manually initializes the provided magic statics **in the specified order**.
 ///
-/// # Panics
-///
-/// This will panic if any of the magic statics have already been initialized.
+/// Does nothing to a magic static if it has already been initialized.
 ///
 /// # Safety
 ///

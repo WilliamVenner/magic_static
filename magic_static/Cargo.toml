@@ -1,6 +1,6 @@
 [package]
 name = "magic_static"
-version = "3.0.0"
+version = "3.0.1"
 edition = "2021"
 description = "Safe, global singletons initialized at program start"
 license = "MIT"

@@ -14,7 +14,10 @@ mod foo {
 			42
 		};
 
-		pub static ref MAGIC: std::sync::Mutex::<usize> = std::sync::Mutex::new(69);
+		pub static ref MAGIC: std::sync::Mutex::<usize> = {
+			std::thread::sleep(std::time::Duration::from_secs(1));
+			std::sync::Mutex::new(69)
+		};
 	}
 }
 

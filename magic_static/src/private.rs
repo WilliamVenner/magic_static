@@ -5,7 +5,7 @@ use core::{cell::UnsafeCell, mem::MaybeUninit};
 #[cfg(not(feature = "bare-metal"))]
 macro_rules! __magic_static_initialized {
 	() => {
-		::core::sync::atomic::AtomicBool::new(false)
+		::core::sync::atomic::AtomicU8::new(0)
 	};
 }
 
@@ -22,7 +22,7 @@ macro_rules! __magic_static_initialized {
 pub struct MagicStatic<T> {
 	#[doc(hidden)]
 	#[cfg(not(feature = "bare-metal"))]
-	pub initialized: core::sync::atomic::AtomicBool,
+	pub initialized: core::sync::atomic::AtomicU8,
 
 	#[doc(hidden)]
 	#[cfg(feature = "bare-metal")]
@@ -38,7 +38,7 @@ impl<T> MagicStatic<T> {
 	#[inline]
 	#[cfg(not(feature = "bare-metal"))]
 	fn initialized(&self) -> bool {
-		self.initialized.load(core::sync::atomic::Ordering::Acquire)
+		self.initialized.load(core::sync::atomic::Ordering::Acquire) == 2
 	}
 
 	#[inline]
@@ -52,8 +52,22 @@ impl<T> MagicStatic<T> {
 	pub fn __init(&'static self) {
 		unsafe {
 			#[cfg(not(feature = "bare-metal"))]
-			if let Ok(_) = self.initialized.compare_exchange(false, true, core::sync::atomic::Ordering::SeqCst, core::sync::atomic::Ordering::SeqCst) {
-				(&mut *self.value.get()).as_mut_ptr().write((self.init)());
+			match self.initialized.compare_exchange(0, 1, core::sync::atomic::Ordering::SeqCst, core::sync::atomic::Ordering::SeqCst) {
+				Ok(0) => {
+					(&mut *self.value.get()).as_mut_ptr().write((self.init)());
+					self.initialized.store(2, core::sync::atomic::Ordering::SeqCst);
+				},
+
+				Err(0) | Err(1) => {
+					// Spin and wait
+					while self.initialized.load(core::sync::atomic::Ordering::Relaxed) != 2 {
+						core::hint::spin_loop();
+					}
+				},
+
+				Err(2) => {},
+				
+				code @ _ => unreachable!("{:?}", code)
 			}
 
 			#[cfg(feature = "bare-metal")]

@@ -94,7 +94,7 @@ fn main() {
 		let barrier = std::sync::Arc::new(std::sync::Barrier::new(3));
 		let barrier_a = barrier.clone();
 		let barrier_b = barrier.clone();
-		let barrier_c = barrier.clone();
+		let barrier_c = barrier;
 		let a = std::thread::spawn(move || {
 			barrier_a.wait();
 			magic_static::init! { foo::MAGIC }

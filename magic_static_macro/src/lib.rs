@@ -1,3 +1,5 @@
+#![allow(clippy::needless_doctest_main)]
+
 use proc_macro::TokenStream;
 use quote::ToTokens;
 
@@ -18,42 +20,42 @@ use quote::ToTokens;
 ///
 /// ```rust
 /// mod foo {
-/// 	magic_static! {
-/// 		pub(super) static ref MAGIC: usize = {
-/// 			println!("Magic!");
-/// 			42
-/// 		};
+///     magic_static! {
+///         pub(super) static ref MAGIC: usize = {
+///             println!("Magic!");
+///             42
+///         };
 ///
-/// 		pub(super) static ref BAR: std::sync::Mutex::<()> = std::sync::Mutex::new(());
-/// 	}
+///         pub(super) static ref BAR: std::sync::Mutex::<()> = std::sync::Mutex::new(());
+///     }
 /// }
 ///
 /// // You can also modularize your magic statics like so:
 /// mod baz {
-/// 	magic_static! {
-/// 		pub(super) static ref MAGIC: usize = {
-/// 			println!("Magic!");
-/// 			42
-/// 		};
+///     magic_static! {
+///         pub(super) static ref MAGIC: usize = {
+///             println!("Magic!");
+///             42
+///         };
 ///
-/// 		pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
-/// 	}
+///         pub(super) static ref BAR: std::sync::Mutex<()> = std::sync::Mutex::new(());
+///     }
 ///
-/// 	#[magic_static::main(
-/// 		MAGIC,
-/// 		BAR
-/// 	)]
-/// 	// The `magic_statics!` macro (NOT `magic_static!`) can generate this function for you
-/// 	pub fn magic_static() {}
+///     #[magic_static::main(
+///         MAGIC,
+///         BAR
+///     )]
+///     // The `magic_statics!` macro (NOT `magic_static!`) can generate this function for you
+///     pub fn magic_static() {}
 /// }
 ///
 /// #[magic_static::main(
-/// 	foo::MAGIC,
-/// 	foo::BAR,
-/// 	mod baz // This will initialize all magic statics in `baz`
+///     foo::MAGIC,
+///     foo::BAR,
+///     mod baz // This will initialize all magic statics in `baz`
 /// )]
 /// fn main() {
-/// 	println!("Hello, world!");
+///     println!("Hello, world!");
 /// }
 /// ```
 pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -74,7 +76,7 @@ pub fn main(attr: TokenStream, item: TokenStream) -> TokenStream {
 	}
 
 	let mut magic_statics = vec![];
-	for item in attr.split(",").map(|path| path.trim()) {
+	for item in attr.split(',').map(|path| path.trim()) {
 		if let Some(item) = item.strip_prefix("mod ").map(str::trim) {
 			if item.contains("::") {
 				magic_statics.push(MagicStatic::Module(syn::parse_str(item).expect("Expected path to a module containing an accessible `magic_static` function")));

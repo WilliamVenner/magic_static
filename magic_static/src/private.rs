@@ -66,8 +66,8 @@ impl<T> MagicStatic<T> {
 				},
 
 				Err(2) => {},
-				
-				code @ _ => unreachable!("{:?}", code)
+
+				code => unreachable!("{:?}", code)
 			}
 
 			#[cfg(feature = "bare-metal")]

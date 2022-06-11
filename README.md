@@ -4,7 +4,7 @@
 
 # ✨ `magic_static`
 
-Safe, global singletons initialized at program start.
+Global singletons initialized at program start, an alternative to lazy initialization.
 
 ## Usage
 

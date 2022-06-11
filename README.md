@@ -57,13 +57,13 @@ mod baz {
 // You can also decorate statics to make them magic statics
 #[magic_static]
 static FOO_BAR: std::thread::JoinHandle<()> = {
-	std::thread::spawn(move || {
-		loop { println!("HELP I CANT STOP SPINNING"); }
-	})
+    std::thread::spawn(move || {
+        loop { println!("HELP I CANT STOP SPINNING"); }
+    })
 };
 
 #[magic_static::main(
-	FOO_BAR,
+    FOO_BAR,
 
     foo::MAGIC,
     foo::BAR,
